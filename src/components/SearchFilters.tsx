@@ -1,9 +1,14 @@
-import { FileText, Image, FileSpreadsheet, Video, Music, Archive, Folder } from 'lucide-react';
+import { FileText, Image, FileSpreadsheet, Video, Music, Archive, Folder, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { SearchFilters as SearchFiltersType } from './SearchInterface';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { useState } from 'react';
 
 interface SearchFiltersProps {
   filters: SearchFiltersType;
@@ -27,18 +32,12 @@ const dateRangeOptions = [
   { value: 'week', label: 'This Week' },
   { value: 'month', label: 'This Month' },
   { value: 'year', label: 'This Year' },
-];
-
-const folderOptions = [
-  { value: 'all', label: 'All Folders' },
-  { value: 'downloads', label: 'Downloads' },
-  { value: 'documents', label: 'Documents' },
-  { value: 'pictures', label: 'Pictures' },
-  { value: 'desktop', label: 'Desktop' },
-  { value: 'work', label: 'Work Files' },
+  { value: 'custom', label: 'Custom Range' },
 ];
 
 const SearchFilters = ({ filters, onFiltersChange }: SearchFiltersProps) => {
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
   const toggleFileType = (type: string) => {
     const newTypes = filters.fileTypes.includes(type)
       ? filters.fileTypes.filter(t => t !== type)
@@ -54,13 +53,26 @@ const SearchFilters = ({ filters, onFiltersChange }: SearchFiltersProps) => {
     onFiltersChange({
       fileTypes: [],
       dateRange: 'all',
-      folder: 'all'
+      folder: '',
+      dateFrom: undefined,
+      dateTo: undefined
     });
   };
 
   const hasActiveFilters = filters.fileTypes.length > 0 || 
                           filters.dateRange !== 'all' || 
-                          filters.folder !== 'all';
+                          filters.folder !== '';
+
+  const handleDateRangeSelect = (range: { from?: Date; to?: Date } | undefined) => {
+    if (range?.from) {
+      onFiltersChange({
+        ...filters,
+        dateFrom: range.from,
+        dateTo: range.to,
+        dateRange: 'custom'
+      });
+    }
+  };
 
   return (
     <div className="glass-card rounded-xl p-6 shadow-glass-lg mb-4 animate-slide-in-up">
@@ -107,45 +119,89 @@ const SearchFilters = ({ filters, onFiltersChange }: SearchFiltersProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Date Range */}
           <div>
-            <h4 className="text-sm font-medium text-foreground mb-3">Date Modified</h4>
-            <Select
-              value={filters.dateRange}
-              onValueChange={(value) => onFiltersChange({ ...filters, dateRange: value })}
-            >
-              <SelectTrigger className="bg-secondary border-border">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {dateRangeOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <h4 className="text-sm font-medium text-foreground mb-3">Date Range</h4>
+            <div className="space-y-2">
+              <Select
+                value={filters.dateRange}
+                onValueChange={(value) => {
+                  onFiltersChange({ ...filters, dateRange: value });
+                  if (value !== 'custom') {
+                    onFiltersChange({ 
+                      ...filters, 
+                      dateRange: value,
+                      dateFrom: undefined,
+                      dateTo: undefined
+                    });
+                  } else {
+                    setShowDatePicker(true);
+                  }
+                }}
+              >
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {dateRangeOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        {option.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {/* Custom Date Range Picker */}
+              {filters.dateRange === 'custom' && (
+                <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal bg-secondary border-border"
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {filters.dateFrom ? (
+                        filters.dateTo ? (
+                          <>
+                            {format(filters.dateFrom, "LLL dd, y")} - {format(filters.dateTo, "LLL dd, y")}
+                          </>
+                        ) : (
+                          format(filters.dateFrom, "LLL dd, y")
+                        )
+                      ) : (
+                        <span>Pick a date range</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      initialFocus
+                      mode="range"
+                      defaultMonth={filters.dateFrom}
+                      selected={{ from: filters.dateFrom, to: filters.dateTo }}
+                      onSelect={handleDateRangeSelect}
+                      numberOfMonths={2}
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
           </div>
 
-          {/* Folder */}
+          {/* Folder Input */}
           <div>
-            <h4 className="text-sm font-medium text-foreground mb-3">Location</h4>
-            <Select
-              value={filters.folder}
-              onValueChange={(value) => onFiltersChange({ ...filters, folder: value })}
-            >
-              <SelectTrigger className="bg-secondary border-border">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {folderOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    <div className="flex items-center gap-2">
-                      <Folder className="w-4 h-4" />
-                      {option.label}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <h4 className="text-sm font-medium text-foreground mb-3">Folder Path</h4>
+            <div className="relative">
+              <Folder className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-foreground-muted" />
+              <Input
+                placeholder="e.g., C:\Documents\Work"
+                value={filters.folder}
+                onChange={(e) => onFiltersChange({ ...filters, folder: e.target.value })}
+                className="pl-10 bg-secondary border-border"
+              />
+            </div>
           </div>
         </div>
 
@@ -164,7 +220,7 @@ const SearchFilters = ({ filters, onFiltersChange }: SearchFiltersProps) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onFiltersChange({ ...filters, fileTypes: ['docx', 'pptx'], folder: 'work' })}
+              onClick={() => onFiltersChange({ ...filters, fileTypes: ['docx', 'pptx'], folder: 'Work' })}
               className="gap-2 text-xs"
             >
               💼 Work Documents
@@ -180,7 +236,7 @@ const SearchFilters = ({ filters, onFiltersChange }: SearchFiltersProps) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onFiltersChange({ ...filters, folder: 'downloads', dateRange: 'month' })}
+              onClick={() => onFiltersChange({ ...filters, folder: 'Downloads', dateRange: 'month' })}
               className="gap-2 text-xs"
             >
               ⬇️ Recent Downloads

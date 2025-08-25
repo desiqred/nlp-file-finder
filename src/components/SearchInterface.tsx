@@ -15,6 +15,8 @@ interface SearchInterfaceProps {
 export interface SearchFilters {
   fileTypes: string[];
   dateRange: string;
+  dateFrom?: Date;
+  dateTo?: Date;
   folder: string;
 }
 
@@ -24,7 +26,7 @@ const SearchInterface = ({ isOpen, onClose }: SearchInterfaceProps) => {
   const [filters, setFilters] = useState<SearchFilters>({
     fileTypes: [],
     dateRange: 'all',
-    folder: 'all'
+    folder: ''
   });
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -70,21 +72,29 @@ const SearchInterface = ({ isOpen, onClose }: SearchInterfaceProps) => {
           {/* Search Bar */}
           <div className="glass-card rounded-xl p-6 shadow-glass-lg mb-4">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 flex-1">
-                <Search className="w-5 h-5 text-foreground-muted" />
+              <div className="flex items-center gap-3 flex-1 relative">
+                <Search className="w-5 h-5 text-foreground-muted absolute left-0" />
                 <Input
                   ref={inputRef}
-                  placeholder="Find the PDF with lasagna recipe I downloaded in March..."
+                  placeholder="Search your files with AI..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="border-0 bg-transparent text-lg placeholder:text-foreground-muted focus-visible:ring-0 search-input"
+                  className="border-0 bg-transparent text-lg placeholder:text-foreground-muted focus-visible:ring-0 search-input pl-8 pr-20"
                 />
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="bg-gradient-primary hover:shadow-glow-primary px-4 absolute right-0"
+                  onClick={() => {/* Search submission logic */}}
+                >
+                  Search
+                </Button>
                 {query && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={clearQuery}
-                    className="p-1 h-auto hover:bg-secondary"
+                    className="p-1 h-auto hover:bg-secondary absolute right-20"
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -114,7 +124,7 @@ const SearchInterface = ({ isOpen, onClose }: SearchInterfaceProps) => {
             </div>
 
             {/* Active Filters */}
-            {(filters.fileTypes.length > 0 || filters.dateRange !== 'all' || filters.folder !== 'all') && (
+            {(filters.fileTypes.length > 0 || filters.dateRange !== 'all' || filters.folder !== '') && (
               <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
                 <span className="text-sm text-foreground-muted">Filters:</span>
                 {filters.fileTypes.map(type => (
@@ -138,12 +148,12 @@ const SearchInterface = ({ isOpen, onClose }: SearchInterfaceProps) => {
                     />
                   </Badge>
                 )}
-                {filters.folder !== 'all' && (
+                {filters.folder !== '' && (
                   <Badge variant="secondary" className="gap-1">
-                    {filters.folder}
+                    📁 {filters.folder}
                     <X 
                       className="w-3 h-3 cursor-pointer"
-                      onClick={() => setFilters(prev => ({ ...prev, folder: 'all' }))}
+                      onClick={() => setFilters(prev => ({ ...prev, folder: '' }))}
                     />
                   </Badge>
                 )}

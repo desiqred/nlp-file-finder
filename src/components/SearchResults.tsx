@@ -142,30 +142,37 @@ const SearchResults = ({ query, filters }: SearchResultsProps) => {
       if (filters.dateRange !== 'all') {
         const fileDate = new Date(file.modified);
         const now = new Date();
-        const daysDiff = Math.floor((now.getTime() - fileDate.getTime()) / (1000 * 60 * 60 * 24));
         
-        switch (filters.dateRange) {
-          case 'today':
-            if (daysDiff > 0) return false;
-            break;
-          case 'week':
-            if (daysDiff > 7) return false;
-            break;
-          case 'month':
-            if (daysDiff > 30) return false;
-            break;
-          case 'year':
-            if (daysDiff > 365) return false;
-            break;
+        if (filters.dateRange === 'custom' && filters.dateFrom) {
+          const fromDate = new Date(filters.dateFrom);
+          const toDate = filters.dateTo ? new Date(filters.dateTo) : new Date();
+          
+          if (fileDate < fromDate || fileDate > toDate) {
+            return false;
+          }
+        } else {
+          const daysDiff = Math.floor((now.getTime() - fileDate.getTime()) / (1000 * 60 * 60 * 24));
+          
+          switch (filters.dateRange) {
+            case 'today':
+              if (daysDiff > 0) return false;
+              break;
+            case 'week':
+              if (daysDiff > 7) return false;
+              break;
+            case 'month':
+              if (daysDiff > 30) return false;
+              break;
+            case 'year':
+              if (daysDiff > 365) return false;
+              break;
+          }
         }
       }
 
       // Folder filter
-      if (filters.folder !== 'all') {
-        const folderName = filters.folder.toLowerCase();
-        if (!file.path.toLowerCase().includes(folderName)) {
-          return false;
-        }
+      if (filters.folder !== '' && !file.path.toLowerCase().includes(filters.folder.toLowerCase())) {
+        return false;
       }
 
       return true;
