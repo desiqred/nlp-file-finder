@@ -1,73 +1,122 @@
-# Welcome to your Lovable project
+# AI File Searcher
 
-## Project info
+A Windows desktop application for searching files using natural language queries, built with React and Electron.
 
-**URL**: https://lovable.dev/projects/ee1c51f4-c92e-41c3-b452-17424ac641a2
+## Features
 
-## How can I edit this code?
+- **Natural Language Search**: Find files using descriptions like "Find the PDF with lasagna recipe I downloaded in March"
+- **Advanced Filters**: Filter by file type, date range, and folder location
+- **Spotlight-style Interface**: Beautiful, modern UI with Alt+Space global shortcut
+- **File Previews**: View file snippets and metadata before opening
+- **Dark/Light Mode**: Adaptive theming support
 
-There are several ways of editing your application.
+## Quick Start
 
-**Use Lovable**
+### Web Version (Development)
+```bash
+# Install dependencies
+npm install
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ee1c51f4-c92e-41c3-b452-17424ac641a2) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Run web version
 npm run dev
 ```
+Visit `http://localhost:8080` to use the web interface.
 
-**Edit a file directly in GitHub**
+### Desktop App Setup
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+To convert this to a working Windows desktop app:
 
-**Use GitHub Codespaces**
+1. **Install Electron dependencies:**
+   ```bash
+   npm install electron electron-builder concurrently wait-on --save-dev
+   ```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+2. **Add desktop scripts to package.json:**
+   ```json
+   {
+     "main": "public/electron.js",
+     "scripts": {
+       "electron": "electron .",
+       "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:8080 && electron .\"",
+       "dist": "npm run build && electron-builder"
+     }
+   }
+   ```
 
-## What technologies are used for this project?
+3. **Run desktop app:**
+   ```bash
+   # Development mode (hot reload)
+   npm run electron-dev
+   
+   # Production mode
+   npm run build
+   npm run electron
+   
+   # Build installer
+   npm run dist
+   ```
 
-This project is built with:
+## Usage
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Keyboard Shortcuts
+- **Alt + Space**: Open search interface (desktop app only)
+- **Escape**: Close search interface
+- **Enter**: Execute search
 
-## How can I deploy this project?
+### Search Examples
+- "Find the PDF with lasagna recipe I downloaded in March"
+- "Show me the marketing PowerPoint from last week"
+- "Excel files modified today"
+- "Documents in the downloads folder"
 
-Simply open [Lovable](https://lovable.dev/projects/ee1c51f4-c92e-41c3-b452-17424ac641a2) and click on Share -> Publish.
+## Tech Stack
 
-## Can I connect a custom domain to my Lovable project?
+- **Frontend**: React + TypeScript + Tailwind CSS
+- **Desktop**: Electron (optional)
+- **UI Components**: Radix UI + shadcn/ui
+- **Build Tool**: Vite
+- **Package Manager**: npm/bun
 
-Yes, you can!
+## Project Structure
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```
+src/
+├── components/
+│   ├── ui/                 # Reusable UI components
+│   ├── SearchInterface.tsx # Main search interface
+│   ├── SearchResults.tsx   # Results display
+│   ├── SearchFilters.tsx   # Filter controls
+│   └── FileResult.tsx      # Individual file result
+├── pages/
+│   └── Index.tsx          # Main page
+└── lib/
+    └── utils.ts           # Utility functions
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## Development Notes
+
+The app is currently set up as a React web application with mock data. The Electron configuration files are included but dependencies need to be installed separately.
+
+For VSCode development:
+1. Use the web version for rapid development
+2. Install Electron dependencies when ready to build desktop app
+3. The app includes proper TypeScript types and modern React patterns
+
+## Next Steps
+
+1. **Backend Integration**: Connect to a real file indexing system
+2. **AI Search**: Integrate with OpenAI or local embedding models
+3. **File System Access**: Add real file system scanning capabilities
+4. **Performance**: Implement virtual scrolling for large result sets
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+MIT License

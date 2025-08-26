@@ -36,6 +36,15 @@ const SearchInterface = ({ isOpen, onClose }: SearchInterfaceProps) => {
     }
   }, [isOpen]);
 
+  // Listen for Alt+Space shortcut hint
+  useEffect(() => {
+    // Add visual indication that Alt+Space works in desktop mode
+    const isElectron = typeof window !== 'undefined' && window.process?.versions?.electron;
+    if (isElectron) {
+      console.log('Running in Electron - Alt+Space shortcut available');
+    }
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -170,6 +179,12 @@ const SearchInterface = ({ isOpen, onClose }: SearchInterfaceProps) => {
                 <span className="flex items-center gap-1">
                   <kbd className="px-2 py-1 bg-secondary rounded text-xs">Esc</kbd>
                   Close
+                </span>
+                <span className="flex items-center gap-1">
+                  <kbd className="px-2 py-1 bg-secondary rounded text-xs">Alt</kbd>
+                  <span className="text-foreground-muted">+</span>
+                  <kbd className="px-2 py-1 bg-secondary rounded text-xs">Space</kbd>
+                  Quick Open
                 </span>
               </div>
               <div className="flex items-center gap-1 text-xs text-foreground-muted">
